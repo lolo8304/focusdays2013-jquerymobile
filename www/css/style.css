@@ -1,0 +1,13 @@
+div.label {font-weight:bold; padding-top: 1.4em; margin-bottom:-0.4em;}
+div.xwhite {background-color: white !important;}
+table.mytop td {vertical-align: top;}
+
+table.myheader {padding: 0; margin: 0; background-color: red;}
+table.myheader td  {padding: 0; margin: 0; background-color: blue; }
+
+
+ul#partner-search-panel-list div.idx {min-width: 20px; font-size: 0.8em; float:left; }
+ul#partner-search-panel-list div.det {padding-left: 20px; font-size: 0.8em; }
+
+ul#partner-search-list div.det {font-size:0.8em; padding-top:0.2em; padding-left: 30px;  }
+span.msg {font-size:0.8em; padding-left: 18px; }
