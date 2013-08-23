@@ -1,42 +1,702 @@
 <!DOCTYPE html>
-<!--
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
--->
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-        <link rel="stylesheet" type="text/css" href="css/index.css" />
-        <title>Hello World</title>
-    </head>
-    <body>
-        <div class="app">
-            <h1>PhoneGap</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
-            </div>
-        </div>
-        <script type="text/javascript" src="phonegap.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>
-        <script type="text/javascript">
-            app.initialize();
-        </script>
-    </body>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=9" /><!-- Damit die Seite im IE9 korrekt erscheint -->
+  <meta name="format-detection" content="telephone=no" /><!-- Damit Zahlen nicht als Tel. Nr. verlinkt werden -->
+
+<title>FocusDays 2013 - jquery mobile</title>
+
+	<script type="text/javascript" src="./js/jquery/jquery-1.10.2.min.js"></script>
+	<!-- script type="text/javascript" src="./js/jquery/jquery-2.0.3.min.js"></script -->
+	<!-- script src="http://code.jquery.com/jquery-1.9.1.min.js"></script -->
+
+	<!--  script src="http://code.jquery.com/mobile/1.3.0-beta.1/jquery.mobile-1.3.0-beta.1.min.js"></script -->
+	<link rel="stylesheet" type="text/css" href="./js/jquery/mobile/jquery.mobile-1.3.1.css"/>
+	
+	<script type="text/javascript" src="./js/jquery/mobile/jquery.mobile-1.3.1x.js"></script>
+	<script type="text/javascript" src="./js/jsrender/jsrender.js"></script>
+	<script type="text/javascript" src="./js/modernizr/modernizr_2.6.2_custom.js"></script>
+	<link rel="stylesheet" type="text/css" href="./css/countries.css"/>
+
+
+	<link rel="stylesheet" type="text/css" href="./css/style.css"/>
+	<script type="text/javascript" src="./js/aa_ps_metadata.js"></script>
+
+
+<script type="text/javascript">
+
+//var myDomain = getCurrentDomainURL("partner-endpoint", "raspi-lolo.dyndns.org", true);
+var myDomain = getCurrentDomainURL("partner-endpoint", "http://raspi-lolo.dyndns.org:8888", false);
+
+var url  = myDomain+'/json-restlet-example-web/json-random/search2?';
+var url2 = myDomain+'/json-restlet-example-web/json-random/get2?partnerNr=';
+var url3 = myDomain+'/json-restlet-example-web/json-random/query?queryFields=partnerName,partnerVorname,plz,ort,partnerNr,geburtsdatum&';
+
+/*
+var url='http://localhost:8080/json-restlet-example-web/json-random/search2?';
+var url2='http://localhost:8080/json-restlet-example-web/json-random/get2?partnerNr=';
+var url3='http://localhost:8080/json-restlet-example-web/json-random/query?queryFields=partnerName,partnerVorname,plz,ort,partnerNr,geburtsdatum&';
+*/
+</script>
+	
+	<script id="partner-search-template" type="text/x-jquery-tmpl">
+		{{if info.length > 300}}
+		      	<h2><span class="msg"><span data-aa-prop="FM046" data-aa-name="ValidationMessages">**keine Adressen gefunden**</span></span></h2>
+		{{else info.length > 0}} 
+		    <h2><span class="msg">{{:info.length}} <span data-aa-prop="kundendaten" data-aa-name="PartnerDetailView">**Kundendaten**</span></span></h2>
+			{{for info}}
+				<li>
+					<a href="#partner-detail" data-transition="slide" onclick="partnerDetail='{{:partnerNr}}'">
+					<span><img src="css/partner_{{:partnerTyp}}.png">
+					<span data-aa-mark="yes">{{:partnerNachname}}{{if partnerVorname}} {{:partnerVorname}}{{/if}}{{if partnerTyp==1}}, {{:geburtsdatum}}{{/if}}</span></span>
+					<div data-aa-mark="yes" class="det">{{:strasse}} {{:strasseNr}}, {{:plz}} {{:ort}} [{{:partnerNr}}]</div>
+					</a>
+				</li>
+			{{/for}}
+		{{else}}
+		      	<h2><span data-aa-prop="PoPartnerSucheResponse_notEmpty" data-aa-name="ValidationMessages">**kein Adressen gefunden**</span></h2>
+		{{/if}}
+	</script>
+	<script id="partner-detail-template" type="text/x-jquery-tmpl"> 
+		  <h3><img src="css/partner_{{:partnerTyp}}.png"> {{if partnerName}}{{:partnerVorname}} {{/if}}{{:partnerName}}
+		  <div style="font-size:0.8em; padding-top:0.2em; padding-left:30px; ">{{if geburtsdatum}}{{:geburtsdatum}}, {{/if}}{{:strasseName}} {{:strasseNr}}, {{:plz}} {{:ort}}</div>
+		  </h3>
+		  
+		  <div data-role="collapsible" data-collapsed="false">
+		      	<h2><span data-aa-prop="angabenZurPerson" data-aa-name="PartnerDetailView">**Angaben zur Person**</span></h2>
+				<div class="ui-grid-a">
+				    <div class="ui-block-a"><div data-aa-prop="partnerNr" class="ui-bar">**Partnernummer**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">{{:partnerNr}}</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="kundenArtCd" class="ui-bar">**Kundenart**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="kundenArtCd" data-aa-code="{{:kundenArtCd}}" class="ui-bar">**kundencode**</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="anredeCd" class="ui-bar">**Anrede**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="anredeCd" data-aa-code="{{:anredeCd}}" class="ui-bar">**anredeCd**</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="titelCd" class="ui-bar">**Titel**</div></div>
+					{{if kundenArtCd == '01' }}
+					    <div class="ui-block-b"><div data-aa-prop="titelCd" data-aa-code="{{:titelAdelCd}}" class="ui-bar">**titelAdelcd**</div></div>
+					{{else}}
+					    <div class="ui-block-b"><div data-aa-prop="titelSupplCd" data-aa-code="{{:titelSupplCd}}" class="ui-bar">**titelSupplcd**</div></div>
+					{{/if}}
+
+				    <div class="ui-block-a"><div data-aa-prop="couvertAnredeCd" class="ui-bar">**Couvert-Anrede**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="couvertAnredeCd" data-aa-code="{{:couvertAnredeCd}}" class="ui-bar">**couvertAnredeCd**</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="korrespondenzAnredeCd" class="ui-bar">**Korrespondenz-Anrede**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="korrespondenzAnredeCd" data-aa-code="{{:korrespondenzAnredeCd}}" class="ui-bar">**korrespondenzAnredeCd**</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="partnerName" class="ui-bar">**Name**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">{{:partnerName}}</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="partnerVorname" class="ui-bar">**Vorname**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">{{:partnerVorname}}</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="geburtsdatum" class="ui-bar">**Geb.datum**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">{{:geburtsdatum}}</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="nationalitaetCd" class="ui-bar">**Nationalität**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="nationalitaetCd" data-aa-code="{{:nationalitaetCd}}" class="ui-bar">**nationalitaetCd**</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="zivilstandCd" class="ui-bar">**Zivilstand**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="zivilstandCd" data-aa-code="{{:zivilstandCd}}" class="ui-bar">**zivilstandCd**</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="beruf" class="ui-bar">**Beruf**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">{{:beruf}}</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="geschlechtCd" class="ui-bar">**Geschlecht**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="geschlechtCd" data-aa-code="{{:geschlechtCd}}" class="ui-bar">**geschlechtCd**</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="korrespondenzSpracheCd" class="ui-bar">**Korrespondenz-Sprache**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="korrespondenzSpracheCd" data-aa-code="{{:korrespondenzSpracheCd}}" data-aa-code-converter="lower" class="ui-bar">**korrespondenzSpracheCd**</div></div>
+
+				</div>
+
+		      </div>
+		      <div data-role="collapsible" data-collapsed="true">
+		      	<h2><span data-aa-prop="kundenadresse" data-aa-name="PartnerDetailView">**Kundenandresse**</span></h2>
+				<div class="ui-grid-a">
+				    <div class="ui-block-a"><div data-aa-prop="strasseNr" class="ui-bar">**Strasse Nr**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">{{:strasseName}} {{:strasseNr}}</div></div>
+
+				    <div class="ui-block-a"><div class="ui-bar"><span data-aa-prop="plz">**PLZ**</span> <span data-aa-prop="ort">**Ort**</span></span></div></div>
+				    <div class="ui-block-b"><div class="ui-bar">{{:plz}} {{:ort}}</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="kantonCd" class="ui-bar">**Kanton**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="kantonCd" data-aa-code="{{:kantonCd}}" class="ui-bar">**kantonCd**</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="landCd" class="ui-bar">**Land**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="landCd" data-aa-code="{{:landCd}}" class="ui-bar">**landCd**</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="postfach" class="ui-bar">**Postfach**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">{{:postfach}}</div></div>
+
+				    <div class="ui-block-a"><div class="ui-bar"><span data-aa-prop="postfach">**Postfach**</span> <span data-aa-prop="plz">**PLZ**</span> <span data-aa-prop="ort">**Ort**</span></div></div>
+				    <div class="ui-block-b"><div class="ui-bar">{{:postfachPlz}} {{:postfachOrt}}</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="postfachLand" class="ui-bar">**Postfach Land**</div></div>
+				    <div class="ui-block-b"><div data-aa-prop="landCd" data-aa-code="{{:postfachLand}}" class="ui-bar">**postfachLand**</div></div>
+
+				</div>
+		      </div>
+		      <div data-role="collapsible" data-collapsed="true">
+		      	<h2><span data-aa-prop="kontaktdaten" data-aa-name="PartnerDetailView">**Kontaktangaben**</span></h2>
+				<div class="ui-grid-a">
+				    <div class="ui-block-a"><div data-aa-prop="telefonGeschaft" class="ui-bar">**Tel Geschäft**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">
+						{{if telefonGeschaft }}
+							<a href="tel:{{:telefonGeschaft}}">{{:telefonGeschaft}}</a>
+						{{/if}}
+					</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="telefonPrivat" class="ui-bar">**Tel Privat**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">
+						{{if telefonPrivat }}
+							<a href="tel:{{:telefonPrivat}}">{{:telefonPrivat}}</a>
+						{{/if}}
+					</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="emailGeschaft" class="ui-bar">**Email Geschäft**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">
+						{{if emailGeschaft }}
+							<a href="mailto:{{:emailGeschaft}}">{{:emailGeschaft}}</a>
+						{{/if}}
+					</div></div>
+
+				    <div class="ui-block-a"><div data-aa-prop="emailPrivat" class="ui-bar">**Email Privat**</div></div>
+				    <div class="ui-block-b"><div class="ui-bar">
+						{{if emailPrivat }}
+							<a href="mailto:{{:emailPrivat}}">{{:emailPrivat}}</a>
+						{{/if}}
+					</div></div>
+
+				</div>
+		      </div>
+	</script>
+	<script id="panel-template" type="text/x-jquery-tmpl"> 
+		<ul id="partner-search-panel-list" data-role="listview" data-theme="a" class="nav-search">
+				<li data-icon="delete"><a onclick="closeActivePanel()"></a></li>
+				<li><center>
+					<span>
+						<a href="#" onclick="switchLocale('de'); false"><img class="icon-flag-DE"></img></a>&nbsp;
+					    <a href="#" onclick="switchLocale('fr'); false"><img class="icon-flag-FR"></img></a>&nbsp;
+					    <a href="#" onclick="switchLocale('it'); false"><img class="icon-flag-IT"></img></a>&nbsp;
+					    <a href="#" onclick="switchLocale('en'); false"><img class="icon-flag-US"></img></a>&nbsp;
+				   </span>
+				</center></li>
+				<li data-icon="search"><a href="#partner-search" data-transition="slide" data-direction="reverse" data-iconpos="left" onclick="refreshSamePageIfNeeded('partner-search')">
+				<span data-aa-prop="title" data-aa-name="PartnerSucheView">**Kundensuche**</span></a></li>
+				{{if partnerResult}}
+					<li data-icon="arrow-l"><a href="#partner-result" data-transition="slide" data-direction="reverse" onclick="refreshSamePageIfNeeded('partner-result')">
+							<span data-aa-prop="ihreKunden" data-aa-name="PartnerSucheView">**Ihre Kunden**</span></a></li>
+				{{/if}}
+				{{if nofPartnerHistory > 0 }}
+					<li data-icon="delete"><a href="#partner-search" data-transition="slide"  data-direction="reverse"  onclick="clearCachedPartnerHistory();refreshSamePageIfNeeded('partner-search')"><span data-aa-prop="loeschenButton" data-aa-name="AdminBrokerDetailView">**History**</span><span class="ui-li-count">{{:nofPartnerHistory}}</span></a></li>
+					{{for partnerHistory}}
+						<li><a href="#partner-detail" data-transition="slide"  data-direction="reverse" onclick="gotoHistoryPartner('{{:id}}')">
+							<div class="idx">{{:index}})</div>{{:name}}
+							<div class="det">{{:detail}}</div>
+						</a></li>
+					{{/for}}
+				{{/if}}
+			</ul>
+			
+	</script>
+	
+	
+	<script>
+		var normalStart=false;
+		var partnerResult;  // speichert gefundene Partner
+		var partnerDetail;  // speichert Partner Nummer
+		var partnerHistory;
+		var query;
+		var jsonStartTimeInMs=new Array();
+		var jsonElapsedTimeInMs;
+		function cachedPartnerHistory() {
+			if (partnerHistory == null) {
+				partnerHistory = $M.getCachedEntry("partnerHistory");
+				if (partnerHistory == null) {
+					partnerHistory = new Array();
+					setCachedPartnerHistory(partnerHistory);
+				}
+				console.log("read partner history from local storage (size="+partnerHistory.length+")");
+			}
+			return partnerHistory;
+		}
+		function setCachedPartnerHistory(paHistory) {
+			partnerHistory = paHistory;
+			$M.addCachedEntry("partnerHistory", paHistory);
+			console.log("write partner history to local storage (size="+partnerHistory.length+")");
+		}
+		function clearCachedPartnerHistory() {
+			setCachedPartnerHistory(new Array());
+			console.log("clear partner history in local storage");
+			clearCache();
+		}
+	</script>
+
+
+</head>
+<body>
+
+	<!-- -------------------------------------------------------------------------------- -->
+
+	<div data-role="page" id="partner-search" data-theme="c" data-content-theme="c">
+		<div data-role="header">
+			<a href="#home" data-role="button" data-icon="home"
+				data-iconpos="left" data-transition="slide" data-direction="reverse"
+				data-inline="true">Home</a>
+			<h2 data-aa-name="PartnerSucheView" data-aa-prop="title">**Search**</h2>
+			<a href="#partner-search-panel" data-role="button" data-icon="grid"
+				data-iconpos="notext" data-transition="slide"
+				data-direction="reverse" data-inline="true" data-theme="a"
+				data-display="reveal" data-dismissible="false"  >Menu</a>
+		</div>
+		<div data-role="content">
+			<form id="partner-search-form">
+			<table>
+			    <tr><td width="40%">
+			         <label data-aa-prop="partnerNr" data-metaponame="PoPartnerSucheKriterien" for="partner-search-partnerNr">**Nr:**</label>
+			    </td><td width="60%">
+			         <input type="text" data-clear-btn="true" name="partnerNr" id="partner-search-partnerNr" value="" >
+			    </td></tr>
+			    <tr><td>
+			         <label data-aa-prop="partnerVorname" for="partner-search-partnerVorname">**Firstname:**</label>
+			    </td><td>
+			         <input type="text" data-clear-btn="true" name="partnerVorname" id="partner-search-partnerVorname" value="" >
+			   </td></tr>
+			    <tr><td>
+			         <label data-aa-prop="partnerName" for="partner-search-partnerName">**Name:**</label>
+			    </td><td>
+			         <input type="text" data-clear-btn="true" name="partnerName" id="partner-search-partnerName" value="" >
+			   </td></tr>
+			    <tr><td>
+				     <label data-aa-prop="plz" for="partner-search-plz">**Plz:**</label>
+			    </td><td>
+				     <input type="text" data-clear-btn="true" name="plz" pattern="[0-9]*" id="partner-search-plz" value="" >
+				</td></tr>
+			    <tr><td>
+			         <label data-aa-prop="ort" for="partner-search-ort">**Ort:**</label>
+			    </td><td>
+			         <input type="text" data-clear-btn="true" name="ort" id="partner-search-ort" value="" >
+			    </td></tr>
+			    </table>
+			    <input type="hidden" name="sort" value="partnerName" >
+				<a id="partner-search-form-default" href="#partner-result" onclick="aaPartnerSearch('partner-search-form')" data-role="button" data-icon="arrow-r" data-iconpos="right"  data-theme="b">
+				<span data-aa-name="PartnerSucheView" data-aa-prop="sucheButton"  >Result</span></a>
+			</form>
+			<form id="partner-query-form">
+				<h2 data-aa-name="PartnerSucheView" data-aa-prop="title">**Search**</h2>
+			    <input type="text" data-clear-btn="true" name="query" id="partner-search-query" value="" >
+				<a id="partner-query-form-default" href="#partner-result" onclick="aaPartnerQuery('partner-query-form')" data-role="button" data-icon="arrow-r" data-iconpos="right"  data-theme="b">
+				<span data-aa-name="PartnerSucheView" data-aa-prop="sucheButton">**suchen**</span></a>
+			</form>
+		</div>
+		<div data-role="panel" id="partner-search-panel"
+			data-position-fixed="true" data-display="overlay" data-theme="a"
+			data-content-theme="a" data-position="right">
+		</div>
+	</div>
+
+
+	
+	<!-- -------------------------------------------------------------------------------- -->
+
+
+	<div data-role="page" id="partner-result" data-theme="c" data-content-theme="c">
+		<div data-role="header">
+			<a href="#partner-search" data-role="button" data-icon="arrow-l"
+				data-iconpos="left" data-transition="slide" data-direction="reverse"
+				data-inline="true"><span data-aa-prop="sucheButton" data-aa-name="PartnerSucheView">**Search**</span></a>
+			<h2><span data-aa-prop="ihreKunden" data-aa-name="PartnerSucheView">**Results**</span></h2>
+			<a href="#partner-result-panel" data-role="button" data-icon="grid"
+				data-iconpos="notext" data-transition="slide"
+				data-direction="reverse" data-inline="true" data-theme="a">**Menu**</a>
+		</div>
+		<div data-role="content">
+			<ul data-role="listview" data-theme="c" class="nav-search" id="partner-search-list"></ul>
+		</div>
+		<div data-role="panel" id="partner-result-panel"
+			data-position-fixed="true" data-display="overlay" data-theme="a"
+			data-content-theme="a" data-position="right">
+		</div>
+	</div>
+
+
+	<!-- -------------------------------------------------------------------------------- -->
+	
+	
+	<div data-role="page" id="partner-detail" data-theme="c"
+		data-content-theme="c">
+		<div data-role="header">
+			<a href="#partner-result" data-role="button" data-icon="arrow-l"
+				data-iconpos="left" data-transition="slide" data-direction="reverse"
+				data-inline="true"><span data-aa-prop="ihreKunden" data-aa-name="PartnerSucheView">**Search**</span></a>
+			<h2><span data-aa-prop="kundendaten" data-aa-name="PartnerDetailView">**Results**</span></h2>
+			<a href="#partner-detail-panel" data-role="button" data-icon="grid"
+				data-iconpos="notext" data-transition="slide"
+				data-direction="reverse" data-inline="true" data-theme="a">**Menu**</a>
+		</div>
+		<div data-role="content">
+			<div data-role="collapsible-set" data-theme="c" data-content-theme="d" id="partner-detail-info">
+			</div>
+		</div>
+		<div data-role="panel" id="partner-detail-panel"
+			data-position-fixed="true" data-display="overlay" data-theme="a"
+			data-content-theme="a" data-position="right">
+		</div>
+	</div>
+	
+	
+		<!-- -------------------------------------------------------------------------------- -->
+	
+	
+<div data-role="page" id="home" data-theme="d" data-content-theme="d">
+   <div data-role="content">   
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td align="center"><h1 data-aa-prop="ihreKunden" data-aa-name="PartnerSucheView">**Partner**</h1></td>
+      </tr>
+      <tr>
+        <td align="center"><img src="css/mobile2.png" ></td>
+      </tr>
+    </table>
+    <ul data-role="listview" data-theme="d" data-divider-theme="d" data-mini="true" style="padding-bottom:1.5em;">
+      <li>
+        <a href="#partner-search" data-transition="slide">
+          <h3 data-aa-prop="title" data-aa-name="PartnerSucheView">***Kundensuche****</h3>
+        </a>
+      </li>
+    </ul>
+   	<table cellpadding="0" cellspacing="10" width="100%" style="padding-top: 2em;">
+      <tr><td align="right" valign="middle" width="90%" style="font-style: italic">powered by</td><td align="right"><img src="css/team.png"></td></tr>
+      <tr><td align="right" valign="top" style="font-style: italic">with</td><td align="right"><a href="http://jquerymobile.com/"><img src="css/jquerymobile.png" border="0"></a></td></tr>
+      <tr><td><br></td></tr>
+      <tr><td align="right" valign="top" style="font-style: italic">Focus Days 2013<br><br>feel the spirit</td><td align="right"><a href="http://jquerymobile.com/"><img src="css/focus.png" border="0"></a></td></tr>
+    </table>
+  </div>
+</div>
+	
+	
+	
+<script>
+
+function startTimer() {
+	var ms = new Date().getTime();
+	jsonStartTimeInMs.push(ms);
+	return ms;
+}
+function stopTimer(title) {
+	jsonElapsedTimeInMs = new Date().getTime() - jsonStartTimeInMs.pop();
+	if (title == null) {
+		title = "JSON call";
+	}
+	console.log("Elapsed time "+ title+" = "+jsonElapsedTimeInMs+" [ms]");
+	return jsonElapsedTimeInMs;
+}
+function tickTimer(title) {
+	var ms = jsonStartTimeInMs.pop();
+	jsonStartTimeInMs.push(ms);
+	jsonElapsedTimeInMs = new Date().getTime() - ms;
+	if (title == null) {
+		title = "JSON call";
+	}
+	console.log("    tick elapsed time "+ title + " = "+jsonElapsedTimeInMs+" [ms]");
+	return jsonElapsedTimeInMs;
+}
+
+$(function(){
+    $('#partner-search').on("swiperight", function(){
+        $.mobile.changePage("#home", {"transition": "slide", "reverse" : true} );
+    });  
+    $('#partner-search').on("swipeleft", function(){
+    	if (partnerResult != null) {
+	        $.mobile.changePage("#partner-result", {"transition": "slide", "reverse" : false} );
+    	}
+    });  
+	$('#partner-result').on("swiperight", function(){
+	    $.mobile.changePage("#partner-search", {"transition": "slide", "reverse" : true} );
+    });
+	$('#partner-result').on("swipeleft", function(){
+    	if (partnerDetail != null) {
+        	$.mobile.changePage("#partner-detail", {"transition": "slide", "reverse" : false} );
+    	}
+	});
+
+	$('#partner-detail').on("swiperight", function(){
+        $.mobile.changePage("#partner-result", {"transition": "slide", "reverse" : true} );
+    });
+    $('#home').on("swipeleft", function(){
+        $.mobile.changePage("#partner-search", {"transition": "slide", "reverse" : false} );
+    });  
+  
+  
+});
+
+$('input').keydown(function(e) {
+    if (e.keyCode == 13) {
+    	var forms = $(this).closest('form');
+    	if (forms != null) {
+	    	$('#'+forms[0].id+'-default').click();
+    	}
+    }
+});
+
+function backToStart() {
+	if (normalStart == false) {
+		$.mobile.changePage("#partner-search", {"transition": "slide", "reverse" : true} );
+	    return true;
+	}
+	return false;
+}
+
+
+$('#partner-search').on( "pagebeforeshow", function( event ) {
+	normalStart = true;
+	aaPanelRefresh('partner-search-panel');
+	aaPageRefresh('PoPartnerDetail');
+});
+
+$('#home').on( "pagebeforeshow", function( event ) {
+	aaPageRefresh('PoPartnerDetail');
+});
+
+
+$('#partner-result').on( "pagebeforeshow", function( event ) {
+	if (backToStart()) { return; }
+	if (partnerResult) {
+		$('#partner-search-list').html($('#partner-search-template').render(partnerResult));
+		$('#partner-search-list').listview('refresh');
+		aaPanelRefresh('partner-result-panel');
+		aaPageRefresh('PoPartnerDetail');
+	}
+});
+
+
+$('#partner-detail').on( "pagebeforeshow", function( event ) {
+	if (backToStart()) { return; }
+	var p;
+	startTimer();
+	$.ajax({
+  		dataType: "json",
+  		url: url2+partnerDetail,
+  		success: function(data) {
+  			p=data.response.partnerDetail;
+  			stopTimer();
+	  	},
+  		async: false
+	});
+	$('#partner-detail-info').html($('#partner-detail-template').render(p));
+ 	$('#partner-detail-info').collapsibleset('refresh');
+	var a=new Array();
+	var n=p.partnerNachname;
+	if (p.partnerVorname) {
+		n=n+' '+p.partnerVorname;
+	}
+	var d=p.plz+' '+p.ort+' ['+p.partnerNr+']';
+	a.push({"name":n, "detail":d, "id": p.partnerNr, "index": a.length+1}); // neuen Partner am Anfang einfügen
+	var paHistory = cachedPartnerHistory();
+ 	for (var i=0; i<paHistory.length && a.length<8; i++) {
+		if(paHistory[i].id!=p.partnerNr) {
+			a.push({"name":paHistory[i].name, "detail":paHistory[i].detail, "id": paHistory[i].id, "index": a.length+1});
+		}
+	}
+ 	setCachedPartnerHistory(a);
+ 	aaPanelRefresh('partner-detail-panel');
+ 	aaPageRefresh('PoPartnerDetail');
+});
+
+
+function aaPartnerSearch(formName){
+	var val1=$('#partner-search-partnerName').val();
+	var val2=$('#partner-search-partnerVorname').val();
+	var val3=$('#partner-search-ort').val();
+	if (!endsWithChar(val1, "*")) {
+		$('#partner-search-partnerName').val(val1+'*'); 
+	}
+	if (!endsWithChar(val2, "*")) {
+		$('#partner-search-partnerVorname').val(val2+'*'); // temp "*" anfügen
+	}
+	if (!endsWithChar(val3, "*")) {
+		$('#partner-search-ort').val(val3+'*'); // temp "*" anfügen
+	}
+	var params=$('#'+formName).serialize();
+	$('#partner-search-partnerName').val(val1); // origianl wert
+	$('#partner-search-partnerVorname').val(val2); // origianl wert
+	$('#partner-search-ort').val(val3); // origianl wert
+	query=null;
+	startTimer();
+	$.ajax({
+  		dataType: "json",
+  		url: url+params,
+  		success: function(data) {
+	  		partnerResult=data.response.partnerInfos;
+	  		stopTimer();
+	  	},
+  		async: false
+	});
+}
+
+
+function aaPartnerQuery(formName){
+	var params=$('#'+formName).serialize();
+	var q = $('#partner-search-query').val();
+	if (endsWithChar(q, "*")) {
+		q = query.substr(0, query.length-1);
+	}
+	if (startsWithChar(q, "*")) {
+		q = query.substr(1);
+	}
+	query = q.toLowerCase();
+	startTimer();
+	$.ajax({
+  		dataType: "json",
+  		url: url3+params,
+  		success: function(data) {
+	  		partnerResult=data.response.partnerInfos;
+	  		stopTimer();
+	  	},
+  		async: false
+	});
+}
+
+
+function aaPanelRefresh(name) {
+	var x=$('#panel-template').render({"partnerResult":partnerResult, "partnerHistory":cachedPartnerHistory(), "nofPartnerHistory":cachedPartnerHistory().length});
+	$('#'+name).html(x);
+	$('#'+name+' > ul').listview().listview('refresh');
+//	$('#'+name).trigger( "updatelayout" );
+//	$('#'+name+'-list').listview();
+//	$('#'+name).trigger( "updatelayout" );
+//	$('#'+name).panel( "refresh" );
+//	$('[data-role=page]').trigger('pagecreate'); //http://stackoverflow.com/questions/16657123/add-content-to-panel-dynamically
+//	$('[data-role=panel]').trigger('updatelayout');  //http://stackoverflow.com/questions/16429665/how-do-you-dynamically-add-side-panel-menu-items-with-jquery-mobile-and-keep-all
+// http://jsfiddle.net/Palestinian/z3mws/
+}
+
+function aa(s) {
+	if (s==null) return s;
+	var i = s.toLowerCase().indexOf("axa");
+	if (i !== -1) {
+		return s.substring(0, i+1)+s.substring(i+2);
+	}
+	return s;
+}
+function mark(s) {
+	var i = s.toLowerCase().indexOf(query);
+	if (i != -1) {
+		s2= s.substr(0, i)+"<mark>"+s.substr(i, query.length)+"</mark>";
+		s3 = mark(s.substr(i+query.length));
+		return s2+s3;
+	}
+	return s;
+}
+function unmark(s) {
+	return s.replace("<mark>","").replace("</mark>","");
+}
+function isOnPage(elem, pageId) {
+	if (elem == null) return null;
+	//data-role="page"
+	if (elem.attr('data-role') == "page") return elem.attr('id') == pageId;
+	return isOnPage(elem.parent(), pageId);
+}
+function aaPageRefresh(name) {
+	if ($.mobile.activePage == null) return;
+	startTimer();
+	var pageId = $.mobile.activePage.attr('id');
+	var nof = 0;
+	var vNof = 0;
+	$('[data-aa-prop]').each(function () {
+		nof++;
+		if (isOnPage($(this), pageId)) {
+			vNof++;
+			if ($(this).attr('data-aa-name')) {
+				$(this).html(aa($M.label($(this).attr('data-aa-name'), $(this).attr('data-aa-prop'))));			
+			} else {
+				$(this).html(aa($M.label(name, $(this).attr('data-aa-prop'))));		
+			}
+		}
+	});
+	tickTimer("refresh "+vNof+" ps props from "+nof+" tags")
+
+	
+	nof = 0;
+	vNof = 0;
+	if (query) {
+		$('[data-aa-mark]').each(function () {
+			nof++;
+			if (isOnPage($(this), pageId)) {
+				vNof++;
+				$(this).html(mark(unmark($(this).html())));		
+			}
+		});
+		tickTimer("mark "+vNof+" of "+nof+"fields")
+	}
+	
+	nof = 0;
+	vNof = 0;
+	$('[data-aa-code]').each(function () {
+		nof++;
+		if (isOnPage($(this), pageId)) {
+			vNof++;
+			var converter = $(this).attr('data-aa-code-converter');
+			var code = $(this).attr('data-aa-code');
+			if (converter == "lower") {
+				code = code.toLowerCase();
+			}
+			if ($(this).attr('data-aa-name')) {
+				$(this).html($M.codeLong(
+						$(this).attr('data-aa-name'), 
+						$(this).attr('data-aa-prop'),
+						code
+					));			
+			} else {
+				$(this).html($M.codeLong(
+						name, 
+						$(this).attr('data-aa-prop'),
+						code
+					));		
+			}		
+		}
+	});
+	tickTimer("replace "+vNof+" codes from "+nof+" ps codes")
+	stopTimer("pageRefresh");
+}
+
+function refreshSamePageIfNeeded(id) {
+	if ($.mobile.activePage.attr('id') == id) {
+		jQuery.mobile.changePage("#"+id, {
+			allowSamePageTransition: true,
+			transition: 'none',
+			reloadPage: false
+    	});
+    }
+}
+function closeActivePanel() {
+	var id = $.mobile.activePage.attr('id')+"-panel";
+	$( "#"+id ).panel( "close" );
+}
+function gotoHistoryPartner(id) {
+	partnerDetail=id;
+	refreshSamePageIfNeeded("partner-detail");
+}
+
+ 
+$M.addPo("PoPartnerSucheKriterien");
+$M.addPo("PoPartnerDetail");
+$M.addPo("PartnerSucheView");
+$M.addPo("PartnerDetailView");
+$M.addPo("ValidationMessages");
+$M.addPo("AdminBrokerDetailView");
+
+switchLocale("de");
+
+
+</script>
+	
+
+</body>
 </html>
