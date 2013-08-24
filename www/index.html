@@ -408,6 +408,11 @@ function tickTimer(title) {
 	return jsonElapsedTimeInMs;
 }
 
+$( document ).bind( "mobileinit", function() {
+	  // Make your jQuery Mobile framework configuration changes here!
+	  $.mobile.allowCrossDomainPages = true;
+});
+
 $(function(){
     $('#partner-search').on("swiperight", function(){
         $.mobile.changePage("#home", {"transition": "slide", "reverse" : true} );
