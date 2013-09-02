@@ -24,20 +24,34 @@
 	<link rel="stylesheet" type="text/css" href="./css/style.css"/>
 	<script type="text/javascript" src="./js/aa_ps_metadata.js"></script>
 
+	<script type="text/javascript" src="./js/xdr.js"></script>
+
 
 <script type="text/javascript">
+
+$( document ).bind( "mobileinit", function() {
+    $.support.cors                 = true;
+    $.mobile.allowCrossDomainPages = true;
+    $.mobile.pushStateEnabled      = false;
+    
+  	  $.mobile.loader.prototype.options.text = "loading";
+  	  $.mobile.loader.prototype.options.textVisible = false;
+  	  $.mobile.loader.prototype.options.theme = "a";
+  	  $.mobile.loader.prototype.options.html = "";
+
+});
 
 //var myDomain = getCurrentDomainURL("partner-endpoint", "raspi-lolo.dyndns.org", true);
 var myDomain = getCurrentDomainURL("partner-endpoint", "http://raspi-lolo.dyndns.org:8888", false);
 
 var url  = myDomain+'/json-restlet-example-web/json-random/search2?';
 var url2 = myDomain+'/json-restlet-example-web/json-random/get2?partnerNr=';
-var url3 = myDomain+'/json-restlet-example-web/json-random/query?queryFields=partnerName,partnerVorname,plz,ort,partnerNr,geburtsdatum&';
+var url3 = myDomain+'/json-restlet-example-web/json-random/query?queryFields=partnerName,partnerVorname,strasseName,strasseNr,plz,ort,partnerNr,geburtsdatum&query=';
 
 /*
 var url='http://localhost:8080/json-restlet-example-web/json-random/search2?';
 var url2='http://localhost:8080/json-restlet-example-web/json-random/get2?partnerNr=';
-var url3='http://localhost:8080/json-restlet-example-web/json-random/query?queryFields=partnerName,partnerVorname,plz,ort,partnerNr,geburtsdatum&';
+var url3='http://localhost:8080/json-restlet-example-web/json-random/query?queryFields=partnerName,partnerVorname,plz,ort,partnerNr,geburtsdatum&query=';
 */
 </script>
 	
@@ -48,7 +62,7 @@ var url3='http://localhost:8080/json-restlet-example-web/json-random/query?query
 		    <h2><span class="msg">{{:info.length}} <span data-aa-prop="kundendaten" data-aa-name="PartnerDetailView">**Kundendaten**</span></span></h2>
 			{{for info}}
 				<li>
-					<a href="#partner-detail" data-transition="slide" onclick="partnerDetail='{{:partnerNr}}'">
+					<a class="show-page-loading-msg" href="#partner-detail" data-transition="slide" onclick="partnerDetail='{{:partnerNr}}'">
 					<span><img src="css/partner_{{:partnerTyp}}.png">
 					<span data-aa-mark="yes">{{:partnerNachname}}{{if partnerVorname}} {{:partnerVorname}}{{/if}}{{if partnerTyp==1}}, {{:geburtsdatum}}{{/if}}</span></span>
 					<div data-aa-mark="yes" class="det">{{:strasse}} {{:strasseNr}}, {{:plz}} {{:ort}} [{{:partnerNr}}]</div>
@@ -256,42 +270,50 @@ var url3='http://localhost:8080/json-restlet-example-web/json-random/query?query
 				data-display="reveal" data-dismissible="false"  >Menu</a>
 		</div>
 		<div data-role="content">
+			<!--h2 data-aa-name="PartnerSucheView" data-aa-prop="title">**Search**</h2-->
 			<form id="partner-search-form">
-			<table>
-			    <tr><td width="40%">
-			         <label data-aa-prop="partnerNr" data-metaponame="PoPartnerSucheKriterien" for="partner-search-partnerNr">**Nr:**</label>
-			    </td><td width="60%">
-			         <input type="text" data-clear-btn="true" name="partnerNr" id="partner-search-partnerNr" value="" >
-			    </td></tr>
-			    <tr><td>
-			         <label data-aa-prop="partnerVorname" for="partner-search-partnerVorname">**Firstname:**</label>
-			    </td><td>
-			         <input type="text" data-clear-btn="true" name="partnerVorname" id="partner-search-partnerVorname" value="" >
-			   </td></tr>
-			    <tr><td>
-			         <label data-aa-prop="partnerName" for="partner-search-partnerName">**Name:**</label>
-			    </td><td>
-			         <input type="text" data-clear-btn="true" name="partnerName" id="partner-search-partnerName" value="" >
-			   </td></tr>
-			    <tr><td>
-				     <label data-aa-prop="plz" for="partner-search-plz">**Plz:**</label>
-			    </td><td>
-				     <input type="text" data-clear-btn="true" name="plz" pattern="[0-9]*" id="partner-search-plz" value="" >
-				</td></tr>
-			    <tr><td>
-			         <label data-aa-prop="ort" for="partner-search-ort">**Ort:**</label>
-			    </td><td>
-			         <input type="text" data-clear-btn="true" name="ort" id="partner-search-ort" value="" >
-			    </td></tr>
+				<table>
+				    <tr><td width="40%">
+				         <label data-aa-prop="partnerNr" data-aa-name="PoPartnerDetail" for="partner-search-partnerNr">**Nr:**</label>
+				    </td><td width="60%">
+				         <input data-aa-hint="partnerNr" data-aa-name="PoPartnerSucheKriterien" type="text" data-clear-btn="true" name="partnerNr" id="partner-search-partnerNr" value="">
+				    </td></tr>
+				    <tr><td>
+				         <label data-aa-prop="partnerVorname" for="partner-search-partnerVorname">**Firstname:**</label>
+				    </td><td>
+				         <input data-aa-hint="partnerVorname" data-aa-name="PoPartnerSucheKriterien" type="text" data-clear-btn="true" name="partnerVorname" id="partner-search-partnerVorname" value="" >
+				   </td></tr>
+				    <tr><td>
+				         <label data-aa-prop="partnerName" for="partner-search-partnerName">**Name:**</label>
+				    </td><td>
+				         <input data-aa-hint="partnerName" data-aa-name="PoPartnerSucheKriterien" type="text" data-clear-btn="true" name="partnerName" id="partner-search-partnerName" value="" >
+				   </td></tr>
+				    <tr><td>
+				         <label data-aa-prop="strasseNr" for="partner-search-strasseName">**Strasse:**</label>
+				    </td><td>
+				         <input data-aa-hint="strasseNr" data-aa-name="PoPartnerSucheKriterien" type="text" data-clear-btn="true" name="strasseName" id="partner-search-strasseName" value="" >
+				   </td></tr>
+				    <tr><td>
+					     <label data-aa-prop="plz" data-aa-name="PoPartnerSucheKriterien" for="partner-search-plz">**Plz:**</label>
+				    </td><td>
+					     <input data-aa-hint="plz" data-aa-name="PoPartnerSucheKriterien" type="text" data-clear-btn="true" name="plz" pattern="[0-9]*" id="partner-search-plz" value="" >
+					</td></tr>
+				    <tr><td>
+				         <label data-aa-prop="ort" data-aa-name="PoPartnerSucheKriterien" for="partner-search-ort">**Ort:**</label>
+				    </td><td>
+				         <input data-aa-hint="ort" data-aa-name="PoPartnerSucheKriterien" type="text" data-clear-btn="true" name="ort" id="partner-search-ort" value="" >
+				    </td></tr>
 			    </table>
 			    <input type="hidden" name="sort" value="partnerName" >
-				<a id="partner-search-form-default" href="#partner-result" onclick="aaPartnerSearch('partner-search-form')" data-role="button" data-icon="arrow-r" data-iconpos="right"  data-theme="b">
-				<span data-aa-name="PartnerSucheView" data-aa-prop="sucheButton"  >Result</span></a>
+				<a class="show-page-loading-msg" id="partner-search-form-default" href="#partner-result" onclick="aaPartnerSearch('partner-search-form')" data-role="button" data-icon="arrow-r" data-iconpos="right"  data-theme="b">
+				<span data-aa-name="PartnerSucheView" data-aa-prop="sucheButton">***Suche***</span></a>
 			</form>
 			<form id="partner-query-form">
-				<h2 data-aa-name="PartnerSucheView" data-aa-prop="title">**Search**</h2>
-			    <input type="text" data-clear-btn="true" name="query" id="partner-search-query" value="" >
-				<a id="partner-query-form-default" href="#partner-result" onclick="aaPartnerQuery('partner-query-form')" data-role="button" data-icon="arrow-r" data-iconpos="right"  data-theme="b">
+				<div data-role="fieldcontain">
+					<label data-type="horizontal" data-aa-prop="title" data-aa-name="PartnerSucheView" for="partner-search-partnerNr">**Nr:**</label>
+				    <input type="text" data-clear-btn="true" name="query" id="partner-search-query" value="" >
+				</div>
+				<a id="partner-query-form-default" href="#partner-result" onclick="aaPartnerQuery('partner-query-form', 'partner-search-query')" data-role="button" data-icon="arrow-r" data-iconpos="right"  data-theme="b">
 				<span data-aa-name="PartnerSucheView" data-aa-prop="sucheButton">**suchen**</span></a>
 			</form>
 		</div>
@@ -317,6 +339,15 @@ var url3='http://localhost:8080/json-restlet-example-web/json-random/query?query
 				data-direction="reverse" data-inline="true" data-theme="a">**Menu**</a>
 		</div>
 		<div data-role="content">
+			<form action="#partner-result" method="get" id="partner-query-result-form">
+				<div data-role="fieldcontain">
+					<label data-aa-prop="title" data-aa-name="PartnerSucheView" for="partner-search-result-query">**Nr:**</label>
+				    <input type="text" data-clear-btn="true" name="query2" id="partner-search-result-query" value="" >
+				</div>			
+				<a id="partner-query-result-form-default" href="#partner-result" onclick="aaPartnerQuery('partner-query-result-form', 'partner-search-result-query');false" data-role="button" data-icon="arrow-r" data-iconpos="right"  data-theme="b">
+					<span data-aa-name="PartnerSucheView" data-aa-prop="sucheButton">**suchen**</span></a>
+			</form>
+			<h2><span data-aa-name="PartnerSucheView" data-aa-prop="ihreKunden">***Resultate***</span></h2>
 			<ul data-role="listview" data-theme="c" class="nav-search" id="partner-search-list"></ul>
 		</div>
 		<div data-role="panel" id="partner-result-panel"
@@ -408,10 +439,10 @@ function tickTimer(title) {
 	return jsonElapsedTimeInMs;
 }
 
-$( document ).bind( "mobileinit", function() {
-	  // Make your jQuery Mobile framework configuration changes here!
-	  $.mobile.allowCrossDomainPages = true;
-});
+$( document ).on( "click", ".show-page-loading-msg", function() {
+    $.mobile.loading( "show");
+})
+
 
 $(function(){
     $('#partner-search').on("swiperight", function(){
@@ -445,6 +476,8 @@ $('input').keydown(function(e) {
     if (e.keyCode == 13) {
     	var forms = $(this).closest('form');
     	if (forms != null) {
+	    	e.stopImmediatePropagation();
+	        e.preventDefault();
 	    	$('#'+forms[0].id+'-default').click();
     	}
     }
@@ -459,41 +492,30 @@ function backToStart() {
 }
 
 
-$('#partner-search').on( "pagebeforeshow", function( event ) {
+$('#partner-search').on( "pageshow", function( event ) {
 	normalStart = true;
 	aaPanelRefresh('partner-search-panel');
 	aaPageRefresh('PoPartnerDetail');
 });
 
-$('#home').on( "pagebeforeshow", function( event ) {
+$('#home').on( "pageshow", function( event ) {
 	aaPageRefresh('PoPartnerDetail');
 });
 
 
-$('#partner-result').on( "pagebeforeshow", function( event ) {
+$('#partner-result').on( "pageshow", function( event ) {
 	if (backToStart()) { return; }
 	if (partnerResult) {
 		$('#partner-search-list').html($('#partner-search-template').render(partnerResult));
 		$('#partner-search-list').listview('refresh');
 		aaPanelRefresh('partner-result-panel');
 		aaPageRefresh('PoPartnerDetail');
+		$('#partner-search-result-query').focus();
 	}
 });
 
 
-$('#partner-detail').on( "pagebeforeshow", function( event ) {
-	if (backToStart()) { return; }
-	var p;
-	startTimer();
-	$.ajax({
-  		dataType: "json",
-  		url: url2+partnerDetail,
-  		success: function(data) {
-  			p=data.response.partnerDetail;
-  			stopTimer();
-	  	},
-  		async: false
-	});
+function showPartnerDetail(p) {
 	$('#partner-detail-info').html($('#partner-detail-template').render(p));
  	$('#partner-detail-info').collapsibleset('refresh');
 	var a=new Array();
@@ -512,6 +534,15 @@ $('#partner-detail').on( "pagebeforeshow", function( event ) {
  	setCachedPartnerHistory(a);
  	aaPanelRefresh('partner-detail-panel');
  	aaPageRefresh('PoPartnerDetail');
+}
+
+$('#partner-detail').on( "pageshow", function( event ) {
+	if (backToStart()) { return; }
+	startTimer();
+	$.getJSON(url2+partnerDetail, function( data ) {
+		stopTimer();
+  		showPartnerDetail(data.response.partnerDetail);
+	});
 });
 
 
@@ -519,6 +550,7 @@ function aaPartnerSearch(formName){
 	var val1=$('#partner-search-partnerName').val();
 	var val2=$('#partner-search-partnerVorname').val();
 	var val3=$('#partner-search-ort').val();
+	var val4=$('#partner-search-strasseName').val();
 	if (!endsWithChar(val1, "*")) {
 		$('#partner-search-partnerName').val(val1+'*'); 
 	}
@@ -528,27 +560,28 @@ function aaPartnerSearch(formName){
 	if (!endsWithChar(val3, "*")) {
 		$('#partner-search-ort').val(val3+'*'); // temp "*" anfügen
 	}
+	if (!endsWithChar(val4, "*")) {
+		$('#partner-search-strasseName').val(val4+'*'); // temp "*" anfügen
+	}
 	var params=$('#'+formName).serialize();
 	$('#partner-search-partnerName').val(val1); // origianl wert
 	$('#partner-search-partnerVorname').val(val2); // origianl wert
 	$('#partner-search-ort').val(val3); // origianl wert
+	$('#partner-search-strasseName').val(val4); // origianl wert
 	query=null;
+	$('#partner-search-result-query').val("");
+	$('#partner-search-query').val("");
 	startTimer();
-	$.ajax({
-  		dataType: "json",
-  		url: url+params,
-  		success: function(data) {
-	  		partnerResult=data.response.partnerInfos;
-	  		stopTimer();
-	  	},
-  		async: false
+	$.getJSON(url+params, function(data) {
+		stopTimer();
+		partnerResult=data.response.partnerInfos;
 	});
 }
 
 
-function aaPartnerQuery(formName){
+function aaPartnerQuery(formName, inputFieldName){
 	var params=$('#'+formName).serialize();
-	var q = $('#partner-search-query').val();
+	var q = $('#'+inputFieldName).val();
 	if (endsWithChar(q, "*")) {
 		q = query.substr(0, query.length-1);
 	}
@@ -556,15 +589,18 @@ function aaPartnerQuery(formName){
 		q = query.substr(1);
 	}
 	query = q.toLowerCase();
+	$('#partner-search-result-query').val(query);
 	startTimer();
-	$.ajax({
-  		dataType: "json",
-  		url: url3+params,
-  		success: function(data) {
-	  		partnerResult=data.response.partnerInfos;
-	  		stopTimer();
-	  	},
-  		async: false
+	$.getJSON(url3+query)
+	.done(function(data) {
+		stopTimer();
+		partnerResult=data.response.partnerInfos;
+		refreshSamePageIfNeeded('partner-result');
+	})
+	.fail(function( jqxhr, textStatus, error ) {
+		 var err = "Request Failed: " + textStatus + ', ' + error;
+		partnerResult="";
+		refreshSamePageIfNeeded('partner-result');
 	});
 }
 
@@ -573,13 +609,6 @@ function aaPanelRefresh(name) {
 	var x=$('#panel-template').render({"partnerResult":partnerResult, "partnerHistory":cachedPartnerHistory(), "nofPartnerHistory":cachedPartnerHistory().length});
 	$('#'+name).html(x);
 	$('#'+name+' > ul').listview().listview('refresh');
-//	$('#'+name).trigger( "updatelayout" );
-//	$('#'+name+'-list').listview();
-//	$('#'+name).trigger( "updatelayout" );
-//	$('#'+name).panel( "refresh" );
-//	$('[data-role=page]').trigger('pagecreate'); //http://stackoverflow.com/questions/16657123/add-content-to-panel-dynamically
-//	$('[data-role=panel]').trigger('updatelayout');  //http://stackoverflow.com/questions/16429665/how-do-you-dynamically-add-side-panel-menu-items-with-jquery-mobile-and-keep-all
-// http://jsfiddle.net/Palestinian/z3mws/
 }
 
 function aa(s) {
@@ -625,6 +654,18 @@ function aaPageRefresh(name) {
 			}
 		}
 	});
+	$('[data-aa-hint]').each(function () {
+		nof++;
+		if (isOnPage($(this), pageId)) {
+			vNof++;
+			if ($(this).attr('data-aa-name')) {
+				$(this).attr('placeholder', aa($M.hint($(this).attr('data-aa-name'), $(this).attr('data-aa-hint'))));			
+			} else {
+				$(this).attr('placeholder', aa($M.hint(name, $(this).attr('data-aa-hint'))));		
+			}
+		}
+	});
+	
 	tickTimer("refresh "+vNof+" ps props from "+nof+" tags")
 
 	

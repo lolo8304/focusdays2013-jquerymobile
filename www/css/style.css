@@ -11,3 +11,6 @@ ul#partner-search-panel-list div.det {padding-left: 20px; font-size: 0.8em; }
 
 ul#partner-search-list div.det {font-size:0.8em; padding-top:0.2em; padding-left: 30px;  }
 span.msg {font-size:0.8em; padding-left: 18px; }
+
+
+.jquery-auto-geocoder-map { height: 200px; }

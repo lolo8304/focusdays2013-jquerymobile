@@ -206,18 +206,6 @@
 			setLocale : function (newLocale) {
 				this.locale = newLocale;
 				this.loadPOs();
-				/*
-				var currentLocal = this.locale;
-				this.locale = newLocale;
-				$.ajax({
-			  		dataType: "json",
-			  		url: metaURL+this.locale,
-			  		success: function(data) {
-			  			addMetadata(data)
-				  	},
-			  		async: false
-				});
-				*/
 			},
 			tag : function (texts, tag) {
 				if (texts == null) return "";
@@ -241,7 +229,7 @@
 				}
 				return null;
 			}, 
-			text : function (poName, propertyName, tag) {
+			text : function (poName, propertyName, tag, ifAbsent) {
 				var ccKey = "text||"+poName+"."+propertyName+"."+tag;
 				var ccText = this.cachedText(ccKey);
 				if (ccText != null) return ccText;
@@ -249,11 +237,18 @@
 				if (!(prop == null)) {
 					return this.addCachedText(ccKey, this.tag(prop.texts.text, tag));
 				} else {
-					return this.addCachedText(ccKey, "["+poName+"."+propertyName+"."+tag+"]");
+					if (ifAbsent === null) {
+						return this.addCachedText(ccKey, "["+poName+"."+propertyName+"."+tag+"]");
+					} else {
+						return ifAbsent;
+					}
 				}
 			}, 
 			label: function (poName, propertyName) {
 				return this.text(poName, propertyName, "label");
+			},
+			hint: function (poName, propertyName) {
+				return this.text(poName, propertyName, "hint", "");
 			},
 			codes: function (poName, propertyName) {
 				var codes = this.prop(poName, propertyName);
