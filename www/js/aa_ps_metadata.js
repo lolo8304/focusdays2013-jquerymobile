@@ -1,36 +1,4 @@
 
-
-	function getCurrentDomainURL(text, defaultHostName, useDefaultPortAndProtocol) {
-		var myDomain;
-		var loc = window.location;
-		if (window.XDomainRequest) {
-			console.log("IE detected, IE does not support CORS, current domain location must be used");
-			//special trick to support multiple endpoint URLs and using same URL for JSON service
-			// will not work for development
-			myDomain=loc.protocol + "//"+loc.hostname;
-			if (loc.port !== "" && loc.port !== "80" && loc.port !== "443") {
-				myDomain = myDomain + ":"+loc.port;
-			}
-		} else {
-			if (useDefaultPortAndProtocol == true) {
-				myDomain=loc.protocol + "//"+defaultHostName;
-				if (loc.port !== "" && loc.port !== "80" && loc.port !== "443") {
-					myDomain = myDomain + ":"+loc.port;
-				}
-			} else {
-				myDomain=defaultHostName;
-			}
-		}
-		console.log(text+" server URL for JSON services "+myDomain);
-		return myDomain;
-	}
-		
-//	var myDomain = getCurrentDomainURL("metadata endpoint", "raspi-lolo.dyndns.org", true);
-	var myDomain = getCurrentDomainURL("metadata endpoint", "http://raspi-lolo.dyndns.org:8888", false);
-
-	var metaURL  = myDomain+'/json-restlet-example-web/jsonREST/V1.0/PsMetadata/execute?poList=PoPartnerSucheKriterien,PoPartnerDetail,PartnerSucheView,PartnerDetailView&locale=';
-	var metaURL2 = myDomain+'/json-restlet-example-web/jsonREST/V1.0/PsMetadata/execute?poList=';
-
 	function endsWithChar(s, ch) {
 		return (s != null && s.length >= 1 && s[s.length - 1] == ch);
 	}
@@ -51,6 +19,7 @@
 			return [];
 		}
 	}
+
 	/*
 	Storage.prototype.setObject = function (key, value) {
 	    this.setItem(key, JSON.stringify(value));
@@ -68,14 +37,45 @@
 	    var value = localStorage.getItem(key);
 	    return value && JSON.parse(value);
 	}
-	var localStorageKey = "metadata";
 	var $M = {
+//			var myDomain = getCurrentDomainURL("metadata endpoint", "raspi-lolo.dyndns.org", true);
+			localStorageKey: "metadata",
 			cache: {},
 			locale: "de",
 			localStorageSupport: null, 
 			sessionStorageSupport: null, 
 			cachedPOs: null,
 			cachedTexts: new Object(),
+			registeredEvents: new Object(),
+
+			getCurrentDomainURL: function (text, defaultHostName, useDefaultPortAndProtocol) {
+				var myDomain;
+				var loc = window.location;
+				if (window.XDomainRequest) {
+					console.log("IE detected, IE does not support CORS, current domain location must be used");
+					//special trick to support multiple endpoint URLs and using same URL for JSON service
+					// will not work for development
+					myDomain=loc.protocol + "//"+loc.hostname;
+					if (loc.port !== "" && loc.port !== "80" && loc.port !== "443") {
+						myDomain = myDomain + ":"+loc.port;
+					}
+				} else {
+					if (useDefaultPortAndProtocol == true) {
+						myDomain=loc.protocol + "//"+defaultHostName;
+						if (loc.port !== "" && loc.port !== "80" && loc.port !== "443") {
+							myDomain = myDomain + ":"+loc.port;
+						}
+					} else {
+						myDomain=defaultHostName;
+					}
+				}
+				console.log(text+" server URL for JSON services "+myDomain);
+				return myDomain;
+			},
+			metaURL: function(poList) {
+				return this.getCurrentDomainURL("metadata endpoint", "http://raspi-lolo.dyndns.org:8888", false)
+					+'/json-restlet-example-web/jsonREST/V1.0/PsMetadata/execute?poList='+poList+"&locale="+this.locale;
+			},
 			isLocalStorage : function() {
 				if (this.localStorageSupport == null) {
 					this.localStorageSupport = Modernizr.localstorage;
@@ -89,7 +89,7 @@
 			},
 			getCachedPOs : function () {
 				if (this.isLocalStorage()) {
-					var storageKey = "$"+localStorageKey+".cachedPOs";
+					var storageKey = "$"+$M.localStorageKey+".cachedPOs";
 					if (this.cachedPOs == null) {
 						localCachedPOs = localStorageGetObject(storageKey);
 						if (localCachedPOs != null && localCachedPOs.length > 0) {
@@ -109,7 +109,7 @@
 			addPo : function (poName) {
 				this.getCachedPOs();
 				if (this.isLocalStorage()) {
-					var storageKey = "$"+localStorageKey+".cachedPOs";
+					var storageKey = "$"+$M.localStorageKey+".cachedPOs";
 					if (this.cachedPOs.indexOf(poName) < 0) {
 						this.cachedPOs.push(poName);
 						localStorageSetObject(storageKey, this.cachedPOs);
@@ -136,19 +136,23 @@
 					}
 				}
 				if (posToLoad != null) {
-					console.log("load metadata "+posToLoad +" via URL "+metaURL2+posToLoad+"&locale="+this.locale);
+					console.log("load metadata "+posToLoad +" via URL "+this.metaURL(posToLoad));
 					$.support.cors = true;
 					$.ajax({
 				  		dataType: "json",
-				  		url: metaURL2+posToLoad+"&locale="+this.locale,
+				  		url: this.metaURL(posToLoad),
 				  		success: function(data) {
-				  			addMetadata(data);
+				  			var pos = array(data.list.po);
+				  			for (var index=0; index < pos.length; index++) {
+				  				$M.addMeta(pos[index]);
+				  			}
+							$M.triggerEvent("changed", posToLoad);
 				  		},
 				  	    error: function(XMLHttpRequest, textStatus, errorThrown) { 
 							console.log("error while retrieving po data "+ textStatus+", "+errorThrown);
 							throw errorThrown;
 					  	},
-				  		async: false
+				  		async: true
 					});
 				}
 			},
@@ -157,28 +161,29 @@
 					return this.cache[cachedEntry];
 				}
 				if (this.isLocalStorage()) {
-					var localCache = localStorageGetObject(localStorageKey+"."+ cachedEntry);
+					var localCache = localStorageGetObject($M.localStorageKey+"."+ cachedEntry);
 					if (localCache != null && localCache.length > 0) {
-						console.log("localstorage found = "+localStorageKey+"."+ cachedEntry);
+						console.log("localstorage found = "+$M.localStorageKey+"."+ cachedEntry);
 						this.cache[cachedEntry] = localCache;
 					}
 					return localCache;
 				} else {
-					return this.cache[cachedEntry] = localCache;
+					this.cache[cachedEntry] = cachedEntry;
+					return cachedEntry;
 				}
 			},
 			addCachedEntry : function(cachedEntry, cachedValue) {
 				this.cache[cachedEntry] = cachedValue;
 				if (this.isLocalStorage()) {
-					localStorageSetObject(localStorageKey+"."+ cachedEntry, cachedValue);
-					console.log("localstorage added = "+localStorageKey+"."+ cachedEntry);
+					localStorageSetObject($M.localStorageKey+"."+ cachedEntry, cachedValue);
+					console.log("localstorage added = "+$M.localStorageKey+"."+ cachedEntry);
 				}
 			},
 			clearCache : function() {
 				if (this.isLocalStorage()) {
 					var toRemove = [];
 					for (var i = 0; i < localStorage.length; i++){
-						if (startsWith(localStorage.key(i), localStorageKey+".")) {
+						if (startsWith(localStorage.key(i), $M.localStorageKey+".")) {
 							toRemove.push(localStorage.key(i));
 						}
 					}
@@ -188,9 +193,11 @@
 					}
 				}
 				this.cache = {};
+				this.cachedTexts = new Object();
+				$M.setLocale(this.locale);
 			},
 			supportedLocales : function () {
-				return { "de" : "D", "fr" : "F", "it" : "I", "en" : "E"}
+				return { "de" : "D", "fr" : "F", "it" : "I", "en" : "E"};
 			},
 			po : function (poName) {
 				var po = this.getCachedEntry(poName+"."+this.locale);
@@ -206,6 +213,7 @@
 			setLocale : function (newLocale) {
 				this.locale = newLocale;
 				this.loadPOs();
+				this.triggerEvent("localeChanged", this.locale);
 			},
 			tag : function (texts, tag) {
 				if (texts == null) return "";
@@ -222,7 +230,7 @@
 					var props = array(this.po(poName).properties.property);
 					for (var index=0; index < props.length; index++) {
 						if (props[index].name == propertyName) {
-							return props[index]
+							return props[index];
 						}
 					}
 					console.log("property "+propertyName+" not found in po "+poName+" in locale "+this.locale);
@@ -300,20 +308,27 @@
 			},
 			codeLong: function (poName, propertyName, value) {
 				return this.codetext(poName, propertyName, value, "long");
+			},
+			bind: function (eventName, handler) {
+				var handlers = this.registeredEvents[eventName];
+				if (handlers == null) {
+					handlers = new Array();
+					this.registeredEvents[eventName] = handlers;
+				}
+				handlers.push(handler);
+			},
+			triggerEvent: function (eventName, eventData) {
+				console.log("trigger event "+eventName+" ["+eventData+"]");
+				var handlers = this.registeredEvents[eventName];
+				if (handlers !== null) {
+					for (var i=0;i < handlers.length; i++) {
+						console.log("run handler "+handlers[i]+" for event "+eventName+" ["+eventData+"]");
+						handlers[i](eventData);
+					}
+				}
 			}
-	}
-	function addMetadata(data) {
-		var pos = array(data.list.po);
-		for (var index=0; index < pos.length; index++) {
-			$M.addMeta(pos[index]);
-		}
-	}
+	};
+	
 	function switchLocale(newLocale) {
 		$M.setLocale(newLocale);
-		//aaPanelRefresh('partner-search-panel');
-		aaPageRefresh('PoPartnerDetail');
 	}
-	function clearCache() {
-		$M.clearCache();
-		switchLocale($M.locale);
-	}	

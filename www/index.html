@@ -22,7 +22,9 @@
 
 
 	<link rel="stylesheet" type="text/css" href="./css/style.css"/>
+	<script type="text/javascript" src="./js/aa_extensions.js"></script>
 	<script type="text/javascript" src="./js/aa_ps_metadata.js"></script>
+	<script type="text/javascript" src="./js/aa_ps_partner_model.js"></script>
 
 	<script type="text/javascript" src="./js/xdr.js"></script>
 
@@ -41,18 +43,7 @@ $( document ).bind( "mobileinit", function() {
 
 });
 
-//var myDomain = getCurrentDomainURL("partner-endpoint", "raspi-lolo.dyndns.org", true);
-var myDomain = getCurrentDomainURL("partner-endpoint", "http://raspi-lolo.dyndns.org:8888", false);
 
-var url  = myDomain+'/json-restlet-example-web/json-random/search2?';
-var url2 = myDomain+'/json-restlet-example-web/json-random/get2?partnerNr=';
-var url3 = myDomain+'/json-restlet-example-web/json-random/query?queryFields=partnerName,partnerVorname,strasseName,strasseNr,plz,ort,partnerNr,geburtsdatum&query=';
-
-/*
-var url='http://localhost:8080/json-restlet-example-web/json-random/search2?';
-var url2='http://localhost:8080/json-restlet-example-web/json-random/get2?partnerNr=';
-var url3='http://localhost:8080/json-restlet-example-web/json-random/query?queryFields=partnerName,partnerVorname,plz,ort,partnerNr,geburtsdatum&query=';
-*/
 </script>
 	
 	<script id="partner-search-template" type="text/x-jquery-tmpl">
@@ -195,10 +186,10 @@ var url3='http://localhost:8080/json-restlet-example-web/json-random/query?query
 				<li data-icon="delete"><a onclick="closeActivePanel()"></a></li>
 				<li><center>
 					<span>
-						<a href="#" onclick="switchLocale('de'); false"><img class="icon-flag-DE"></img></a>&nbsp;
-					    <a href="#" onclick="switchLocale('fr'); false"><img class="icon-flag-FR"></img></a>&nbsp;
-					    <a href="#" onclick="switchLocale('it'); false"><img class="icon-flag-IT"></img></a>&nbsp;
-					    <a href="#" onclick="switchLocale('en'); false"><img class="icon-flag-US"></img></a>&nbsp;
+						<a href="#" onclick="$M.setLocale('de'); false"><img class="icon-flag-DE"></img></a>&nbsp;
+					    <a href="#" onclick="$M.setLocale('fr'); false"><img class="icon-flag-FR"></img></a>&nbsp;
+					    <a href="#" onclick="$M.setLocale('it'); false"><img class="icon-flag-IT"></img></a>&nbsp;
+					    <a href="#" onclick="$M.setLocale('en'); false"><img class="icon-flag-US"></img></a>&nbsp;
 				   </span>
 				</center></li>
 				<li data-icon="search"><a href="#partner-search" data-transition="slide" data-direction="reverse" data-iconpos="left" onclick="refreshSamePageIfNeeded('partner-search')">
@@ -227,8 +218,6 @@ var url3='http://localhost:8080/json-restlet-example-web/json-random/query?query
 		var partnerDetail;  // speichert Partner Nummer
 		var partnerHistory;
 		var query;
-		var jsonStartTimeInMs=new Array();
-		var jsonElapsedTimeInMs;
 		function cachedPartnerHistory() {
 			if (partnerHistory == null) {
 				partnerHistory = $M.getCachedEntry("partnerHistory");
@@ -248,7 +237,7 @@ var url3='http://localhost:8080/json-restlet-example-web/json-random/query?query
 		function clearCachedPartnerHistory() {
 			setCachedPartnerHistory(new Array());
 			console.log("clear partner history in local storage");
-			clearCache();
+			$M.clearCache();
 		}
 	</script>
 
@@ -415,29 +404,6 @@ var url3='http://localhost:8080/json-restlet-example-web/json-random/query?query
 	
 <script>
 
-function startTimer() {
-	var ms = new Date().getTime();
-	jsonStartTimeInMs.push(ms);
-	return ms;
-}
-function stopTimer(title) {
-	jsonElapsedTimeInMs = new Date().getTime() - jsonStartTimeInMs.pop();
-	if (title == null) {
-		title = "JSON call";
-	}
-	console.log("Elapsed time "+ title+" = "+jsonElapsedTimeInMs+" [ms]");
-	return jsonElapsedTimeInMs;
-}
-function tickTimer(title) {
-	var ms = jsonStartTimeInMs.pop();
-	jsonStartTimeInMs.push(ms);
-	jsonElapsedTimeInMs = new Date().getTime() - ms;
-	if (title == null) {
-		title = "JSON call";
-	}
-	console.log("    tick elapsed time "+ title + " = "+jsonElapsedTimeInMs+" [ms]");
-	return jsonElapsedTimeInMs;
-}
 
 $( document ).on( "click", ".show-page-loading-msg", function() {
     $.mobile.loading( "show");
@@ -491,15 +457,23 @@ function backToStart() {
 	return false;
 }
 
-
 $('#partner-search').on( "pageshow", function( event ) {
 	normalStart = true;
-	aaPanelRefresh('partner-search-panel');
+	aaPanelRefresh();
 	aaPageRefresh('PoPartnerDetail');
 });
 
 $('#home').on( "pageshow", function( event ) {
 	aaPageRefresh('PoPartnerDetail');
+});
+
+$M.bind("changed", function(poName) {
+	aaPanelRefresh();
+	aaPageRefresh("PoPartnerDetail");
+});
+$M.bind("localeChanged", function(poName) {
+	aaPanelRefresh();
+	aaPageRefresh("PoPartnerDetail");
 });
 
 
@@ -508,7 +482,7 @@ $('#partner-result').on( "pageshow", function( event ) {
 	if (partnerResult) {
 		$('#partner-search-list').html($('#partner-search-template').render(partnerResult));
 		$('#partner-search-list').listview('refresh');
-		aaPanelRefresh('partner-result-panel');
+		aaPanelRefresh();
 		aaPageRefresh('PoPartnerDetail');
 		$('#partner-search-result-query').focus();
 	}
@@ -532,16 +506,14 @@ function showPartnerDetail(p) {
 		}
 	}
  	setCachedPartnerHistory(a);
- 	aaPanelRefresh('partner-detail-panel');
+ 	aaPanelRefresh();
  	aaPageRefresh('PoPartnerDetail');
 }
 
 $('#partner-detail').on( "pageshow", function( event ) {
 	if (backToStart()) { return; }
-	startTimer();
-	$.getJSON(url2+partnerDetail, function( data ) {
-		stopTimer();
-  		showPartnerDetail(data.response.partnerDetail);
+	$PsPartner.get(partnerDetail, function(partner) {
+  		showPartnerDetail(partner);
 	});
 });
 
@@ -571,10 +543,9 @@ function aaPartnerSearch(formName){
 	query=null;
 	$('#partner-search-result-query').val("");
 	$('#partner-search-query').val("");
-	startTimer();
-	$.getJSON(url+params, function(data) {
-		stopTimer();
-		partnerResult=data.response.partnerInfos;
+
+	$PsPartner.search(params, function(result) {
+		partnerResult=result;
 	});
 }
 
@@ -590,47 +561,26 @@ function aaPartnerQuery(formName, inputFieldName){
 	}
 	query = q.toLowerCase();
 	$('#partner-search-result-query').val(query);
-	startTimer();
-	$.getJSON(url3+query)
-	.done(function(data) {
-		stopTimer();
-		partnerResult=data.response.partnerInfos;
-		refreshSamePageIfNeeded('partner-result');
-	})
-	.fail(function( jqxhr, textStatus, error ) {
-		 var err = "Request Failed: " + textStatus + ', ' + error;
-		partnerResult="";
+	
+	$PsPartner.query(query, function(result) {
+		partnerResult=result;
 		refreshSamePageIfNeeded('partner-result');
 	});
 }
 
 
-function aaPanelRefresh(name) {
-	var x=$('#panel-template').render({"partnerResult":partnerResult, "partnerHistory":cachedPartnerHistory(), "nofPartnerHistory":cachedPartnerHistory().length});
-	$('#'+name).html(x);
-	$('#'+name+' > ul').listview().listview('refresh');
+function aaPanelRefresh() {
+	if ($.mobile.activePage !== undefined) {
+		var currentPanel = $.mobile.activePage.attr('id')+"-panel";
+		var panelElem = $('#'+currentPanel);
+		if (panelElem !== null) {
+			var x=$('#panel-template').render({"partnerResult":partnerResult, "partnerHistory":cachedPartnerHistory(), "nofPartnerHistory":cachedPartnerHistory().length});
+			panelElem.html(x);
+			$('#'+currentPanel+' > ul').listview().listview('refresh');
+		}
+	}
 }
 
-function aa(s) {
-	if (s==null) return s;
-	var i = s.toLowerCase().indexOf("axa");
-	if (i !== -1) {
-		return s.substring(0, i+1)+s.substring(i+2);
-	}
-	return s;
-}
-function mark(s) {
-	var i = s.toLowerCase().indexOf(query);
-	if (i != -1) {
-		s2= s.substr(0, i)+"<mark>"+s.substr(i, query.length)+"</mark>";
-		s3 = mark(s.substr(i+query.length));
-		return s2+s3;
-	}
-	return s;
-}
-function unmark(s) {
-	return s.replace("<mark>","").replace("</mark>","");
-}
 function isOnPage(elem, pageId) {
 	if (elem == null) return null;
 	//data-role="page"
@@ -639,7 +589,7 @@ function isOnPage(elem, pageId) {
 }
 function aaPageRefresh(name) {
 	if ($.mobile.activePage == null) return;
-	startTimer();
+	$Timer.start();
 	var pageId = $.mobile.activePage.attr('id');
 	var nof = 0;
 	var vNof = 0;
@@ -648,10 +598,11 @@ function aaPageRefresh(name) {
 		if (isOnPage($(this), pageId)) {
 			vNof++;
 			if ($(this).attr('data-aa-name')) {
-				$(this).html(aa($M.label($(this).attr('data-aa-name'), $(this).attr('data-aa-prop'))));			
+				propText = aa($M.label($(this).attr('data-aa-name'), $(this).attr('data-aa-prop')));
 			} else {
-				$(this).html(aa($M.label(name, $(this).attr('data-aa-prop'))));		
+				propText = aa($M.label(name, $(this).attr('data-aa-prop')));
 			}
+			$(this).html(propText);			
 		}
 	});
 	$('[data-aa-hint]').each(function () {
@@ -659,14 +610,15 @@ function aaPageRefresh(name) {
 		if (isOnPage($(this), pageId)) {
 			vNof++;
 			if ($(this).attr('data-aa-name')) {
-				$(this).attr('placeholder', aa($M.hint($(this).attr('data-aa-name'), $(this).attr('data-aa-hint'))));			
+				hintText = aa($M.hint($(this).attr('data-aa-name'), $(this).attr('data-aa-hint')));			
 			} else {
-				$(this).attr('placeholder', aa($M.hint(name, $(this).attr('data-aa-hint'))));		
+				hintText = aa($M.hint(name, $(this).attr('data-aa-hint')));
 			}
+			$(this).attr('placeholder', hintText);
 		}
 	});
 	
-	tickTimer("refresh "+vNof+" ps props from "+nof+" tags")
+	$Timer.tick("refresh "+vNof+" ps props from "+nof+" tags")
 
 	
 	nof = 0;
@@ -676,10 +628,10 @@ function aaPageRefresh(name) {
 			nof++;
 			if (isOnPage($(this), pageId)) {
 				vNof++;
-				$(this).html(mark(unmark($(this).html())));		
+				$(this).html(mark(query, unmark($(this).html())));		
 			}
 		});
-		tickTimer("mark "+vNof+" of "+nof+"fields")
+		$Timer.tick("mark "+vNof+" of "+nof+"fields")
 	}
 	
 	nof = 0;
@@ -708,8 +660,8 @@ function aaPageRefresh(name) {
 			}		
 		}
 	});
-	tickTimer("replace "+vNof+" codes from "+nof+" ps codes")
-	stopTimer("pageRefresh");
+	$Timer.tick("replace "+vNof+" codes from "+nof+" ps codes")
+	$Timer.stop("pageRefresh");
 }
 
 function refreshSamePageIfNeeded(id) {
@@ -737,8 +689,7 @@ $M.addPo("PartnerSucheView");
 $M.addPo("PartnerDetailView");
 $M.addPo("ValidationMessages");
 $M.addPo("AdminBrokerDetailView");
-
-switchLocale("de");
+$M.setLocale("de");
 
 
 </script>
