@@ -7,26 +7,26 @@ var $PsPartner = {
 		"query" : "/json-restlet-example-web/json-random/query?queryFields=partnerName,partnerVorname,strasseName,strasseNr,plz,ort,partnerNr,geburtsdatum&query="
 	},
 	search : function(paramString, callback) {
-		$Timer.start();
+		var timer = new Timer(this.name+" search");
 		$.getJSON(this.domainURL+this.endPoints.search + paramString)
 		.done(function(data) {
-			$Timer.stop();
+			timer.stop();
 			callback(data.response.partnerInfos);
 		});
 	},
 	query : function(queryString, callback) {
-		$Timer.start();
+		var timer = new Timer(this.name+" search");
 		$.getJSON(this.domainURL+this.endPoints.query + queryString)
 		.done(function(data) {
-			$Timer.stop();
+			timer.stop();
 			callback(data.response.partnerInfos);
 		});
 	},
 	get : function(partnerNr, callback) {
-		$Timer.start();
+		var timer = new Timer(this.name+" search");
 		$.getJSON(this.domainURL+this.endPoints.get + partnerNr)
 		.done(function(data) {
-			$Timer.stop();
+			timer.stop();
 			callback(data.response.partnerDetail);
 		});
 	}

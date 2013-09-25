@@ -1,16 +1,4 @@
 
-	function endsWithChar(s, ch) {
-		return (s != null && s.length >= 1 && s[s.length - 1] == ch);
-	}
-	function endsWith(s, chars) {
-		return (s != null && s.indexOf(chars, s.length - chars.length) !== -1);
-	}
-	function startsWith(s, chars) {
-		return (s != null && s.indexOf(chars) == 0);
-	}
-	function startsWithChar(s, ch) {
-		return (s != null && s.length >= 1 && s[0] == ch);
-	}
 
 	function array(value) {
 		if (value != null && value != "") {
@@ -183,7 +171,7 @@
 				if (this.isLocalStorage()) {
 					var toRemove = [];
 					for (var i = 0; i < localStorage.length; i++){
-						if (startsWith(localStorage.key(i), $M.localStorageKey+".")) {
+						if (localStorage.key(i).startsWith($M.localStorageKey+".")) {
 							toRemove.push(localStorage.key(i));
 						}
 					}
@@ -226,7 +214,7 @@
 			
 			prop : function (poName, propertyName) {
 				var po = this.po(poName);
-				if (!(po == null)) {
+				if (po !== null) {
 					var props = array(this.po(poName).properties.property);
 					for (var index=0; index < props.length; index++) {
 						if (props[index].name == propertyName) {
@@ -240,7 +228,7 @@
 			text : function (poName, propertyName, tag, ifAbsent) {
 				var ccKey = "text||"+poName+"."+propertyName+"."+tag;
 				var ccText = this.cachedText(ccKey);
-				if (ccText != null) return ccText;
+				if (!(ccText == null)) return ccText;
 				var prop = this.prop(poName, propertyName);
 				if (!(prop == null)) {
 					return this.addCachedText(ccKey, this.tag(prop.texts.text, tag));
@@ -249,8 +237,8 @@
 						return this.addCachedText(ccKey, "["+poName+"."+propertyName+"."+tag+"]");
 					} else {
 						return ifAbsent;
-					}
-				}
+					};
+				};
 			}, 
 			label: function (poName, propertyName) {
 				return this.text(poName, propertyName, "label");
@@ -293,7 +281,7 @@
 				var ccText = this.cachedText(ccKey);
 				if (ccText != null) return ccText;
 				var code = this.code(poName, propertyName, value);
-				if (!(code == null)) {
+				if (code !== null) {
 					var tt = this.tag(array(code.texts.text), tag);
 					return this.addCachedText(ccKey, tt);
 				} else if (value == null || value == "" || value == "0"){
@@ -331,4 +319,4 @@
 	
 	function switchLocale(newLocale) {
 		$M.setLocale(newLocale);
-	}
+	};

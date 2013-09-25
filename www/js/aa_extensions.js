@@ -1,50 +1,75 @@
-function aa(s) {
-	if (s==null) return s;
-	var i = s.toLowerCase().indexOf("axa");
+
+String.prototype.endsWithChar = function(ch) {
+	return this.length >= 1 && this[this.length - 1] == ch;
+};
+String.prototype.startsWithChar = function(ch) {
+	return this.length >= 1 && this[0] == ch;
+};
+
+String.prototype.endsWith = function(chars) {
+	return this.indexOf(chars, this.length - chars.length) !== -1;
+};
+
+String.prototype.startsWith = function(chars) {
+	return this.indexOf(chars) == 0;
+};
+
+String.prototype.aa = function(){ 
+	var i = this.toLowerCase().indexOf("axa");
 	if (i !== -1) {
-		return s.substring(0, i+1)+s.substring(i+2);
+		return this.substring(0, i+1)+this.substring(i+2);
 	}
-	return s;
-}
-function mark(q, s) {
-	var i = s.toLowerCase().indexOf(q);
+	return this;
+};
+
+String.prototype.mark = function(q) {
+	var i = this.toLowerCase().indexOf(q);
 	if (i != -1) {
-		s2= s.substr(0, i)+"<mark>"+s.substr(i, q.length)+"</mark>";
-		s3 = mark(q, s.substr(i+q.length));
+		s2= this.substr(0, i)+"<mark>"+this.substr(i, q.length)+"</mark>";
+		s3 = this.substr(i+q.length).mark(q);
 		return s2+s3;
 	}
-	return s;
-}
-function unmark(s) {
-	return s.replace("<mark>","").replace("</mark>","");
-}
+	return this;
+};
 
-var $Timer = {
-	startTimeInMs: new Array(),
-	elapsedTimeInMs: null,
-	start: function() {
+String.prototype.unmark = function() {
+	return this.replace("<mark>","").replace("</mark>","");
+};
+
+
+function Timer(title) {
+	this.title = title;
+	this.startTimeInMs = null;
+	this.startTimeLastTickInMs = null;
+	this.elapsedTimeInMs = null;
+	this.elapsedTimeLastTickInMs = null;
+	
+	this.start = function() {
 		var ms = new Date().getTime();
-		this.startTimeInMs.push(ms);
+		this.startTimeInMs = ms;
+		this.startTimeLastTickInMs = ms;
 		return ms;
-	},
-	stop: function(title) {
-		this.elapsedTimeInMs = new Date().getTime() - this.startTimeInMs.pop();
+	};
+	this.stop = function() {
+		var ms = new Date().getTime();
+		this.elapsedTimeInMs = ms - this.startTimeInMs;
+		this.startTimeLastTickInMs = ms;
 		if (title == null) {
 			title = "JSON call";
 		}
-		console.log("Elapsed time "+ title+" = "+this.elapsedTimeInMs+" [ms]");
+		console.log("Elapsed time "+ this.title+" = "+this.elapsedTimeInMs+" [ms]");
 		return this.elapsedTimeInMs;
 	},
-	tick: function (title) {
-		var ms = this.startTimeInMs.pop();
-		this.startTimeInMs.push(ms);
-		this.elapsedTimeInMs = new Date().getTime() - ms;
+	this.tick = function (tickTitle) {
+		var ms = new Date().getTime();
+		this.elapsedTimeLastTickInMs = ms - this.startTimeLastTickInMs;
+		this.startTimeLastTickInMs = ms;
 		if (title == null) {
 			title = "JSON call";
 		}
-		console.log("    tick elapsed time "+ title + " = "+this.elapsedTimeInMs+" [ms]");
+		console.log("    tick elapsed time "+ this.title + " / "+ tickTitle +" = "+this.elapsedTimeLastTickInMs+" [ms]");
 		return this.elapsedTimeInMs;
-	}
+	};
 };
 
 

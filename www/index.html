@@ -376,7 +376,7 @@ $( document ).bind( "mobileinit", function() {
 	
 <div data-role="page" id="home" data-theme="d" data-content-theme="d">
    <div data-role="content">   
-    <table cellpadding="0" cellspacing="0" width="100%">
+    <table >
       <tr>
         <td align="center"><h1 data-aa-prop="ihreKunden" data-aa-name="PartnerSucheView">**Partner**</h1></td>
       </tr>
@@ -391,7 +391,7 @@ $( document ).bind( "mobileinit", function() {
         </a>
       </li>
     </ul>
-   	<table cellpadding="0" cellspacing="10" width="100%" style="padding-top: 2em;">
+   	<table style="padding-top: 2em;">
       <tr><td align="right" valign="middle" width="90%" style="font-style: italic">powered by</td><td align="right"><img src="css/team.png"></td></tr>
       <tr><td align="right" valign="top" style="font-style: italic">with</td><td align="right"><a href="http://jquerymobile.com/"><img src="css/jquerymobile.png" border="0"></a></td></tr>
       <tr><td><br></td></tr>
@@ -523,16 +523,16 @@ function aaPartnerSearch(formName){
 	var val2=$('#partner-search-partnerVorname').val();
 	var val3=$('#partner-search-ort').val();
 	var val4=$('#partner-search-strasseName').val();
-	if (!endsWithChar(val1, "*")) {
+	if (!val1.endsWithChar("*")) {
 		$('#partner-search-partnerName').val(val1+'*'); 
 	}
-	if (!endsWithChar(val2, "*")) {
+	if (!val2.endsWithChar("*")) {
 		$('#partner-search-partnerVorname').val(val2+'*'); // temp "*" anfügen
 	}
-	if (!endsWithChar(val3, "*")) {
+	if (!val3.endsWithChar("*")) {
 		$('#partner-search-ort').val(val3+'*'); // temp "*" anfügen
 	}
-	if (!endsWithChar(val4, "*")) {
+	if (!val4.endsWithChar("*")) {
 		$('#partner-search-strasseName').val(val4+'*'); // temp "*" anfügen
 	}
 	var params=$('#'+formName).serialize();
@@ -553,10 +553,10 @@ function aaPartnerSearch(formName){
 function aaPartnerQuery(formName, inputFieldName){
 	var params=$('#'+formName).serialize();
 	var q = $('#'+inputFieldName).val();
-	if (endsWithChar(q, "*")) {
+	if (q.endsWithChar("*")) {
 		q = query.substr(0, query.length-1);
 	}
-	if (startsWithChar(q, "*")) {
+	if (q.startsWithChar("*")) {
 		q = query.substr(1);
 	}
 	query = q.toLowerCase();
@@ -587,9 +587,18 @@ function isOnPage(elem, pageId) {
 	if (elem.attr('data-role') == "page") return elem.attr('id') == pageId;
 	return isOnPage(elem.parent(), pageId);
 }
+
+function aa(s) {
+	if (s !== null && s !== undefined) {
+		return s.aa();
+	} else {
+		return s;
+	}
+}
 function aaPageRefresh(name) {
 	if ($.mobile.activePage == null) return;
-	$Timer.start();
+	var timer = new Timer("pageRefresh");
+	timer.start();
 	var pageId = $.mobile.activePage.attr('id');
 	var nof = 0;
 	var vNof = 0;
@@ -618,8 +627,7 @@ function aaPageRefresh(name) {
 		}
 	});
 	
-	$Timer.tick("refresh "+vNof+" ps props from "+nof+" tags")
-
+	timer.tick("refresh "+vNof+" ps props from "+nof+" tags");
 	
 	nof = 0;
 	vNof = 0;
@@ -628,10 +636,10 @@ function aaPageRefresh(name) {
 			nof++;
 			if (isOnPage($(this), pageId)) {
 				vNof++;
-				$(this).html(mark(query, unmark($(this).html())));		
+				$(this).html($(this).html().unmark().mark(query));		
 			}
 		});
-		$Timer.tick("mark "+vNof+" of "+nof+"fields")
+		timer.tick("mark "+vNof+" of "+nof+"fields")
 	}
 	
 	nof = 0;
@@ -660,8 +668,8 @@ function aaPageRefresh(name) {
 			}		
 		}
 	});
-	$Timer.tick("replace "+vNof+" codes from "+nof+" ps codes")
-	$Timer.stop("pageRefresh");
+	timer.tick("replace "+vNof+" codes from "+nof+" ps codes");
+	timer.stop("pageRefresh");
 }
 
 function refreshSamePageIfNeeded(id) {
