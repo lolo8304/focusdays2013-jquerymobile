@@ -23,6 +23,17 @@ String.prototype.aa = function(){
 };
 
 String.prototype.mark = function(q) {
+	q = q.trim();
+	if (q == "") return this;
+	if (q.indexOf(' ') !== -1) {
+		var qList = q.trim().split(" ");
+		var i;
+		var s2 = this;
+		for (i = 0; i < qList.length; ++i) {
+		    s2 = s2.mark(qList[i]);
+		}
+		return s2;
+	}
 	var i = this.toLowerCase().indexOf(q);
 	if (i != -1) {
 		s2= this.substr(0, i)+"<mark>"+this.substr(i, q.length)+"</mark>";
